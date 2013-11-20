@@ -143,7 +143,16 @@ app.get('/review', function(req, res) {
     //console.log('HEADERS: ' + JSON.stringify(apires.headers));
     apires.setEncoding('utf8');
     apires.on('data', function(d) { body += d; });
-    apires.on('end', function() { res.send(body); });
+    apires.on('end', function() {
+      var json = JSON.parse(body);
+      for (var i = 0; i < json.totalSize; i++) {
+        json.records[i].formatted = json.records[i]['Name'] + 
+        ' rated the service: ' + json.records[i]['Product_Ratings__c'] + 
+        ', and commented: ' + json.records[i]['Product_Review__c'] + 
+        ' on: ' + json.records[i]['CreatedDate'];           
+      }
+      res.send(JSON.stringify(json, null, 2)); 
+    });
   });
 
   apireq.on('error', function(err) { console.log("error calling!" + err); });
