@@ -7,8 +7,9 @@ var express = require('express');
 var routes = require('./routes');
 var user = require('./routes/user');
 var http = require('http');
+var https = require('https');
 var path = require('path');
-var httpProxy = require('http-proxy');
+var util = require('util');
 
 var app = express();
 
@@ -23,17 +24,60 @@ app.use(express.urlencoded());
 app.use(express.methodOverride());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(function(req,res,next) {
+  // add CORS support for any site
+  res.header("Access-Control-Allow-Origin", '*');
+  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  if ("OPTIONS" === req.method) {
+    res.send(200);
+  }
+  else {
+    next();
+  }
+});
 
 // development only
 if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-app.get('/', routes.index);
+app.get('/login', function(req, res) {
+  var options = {
+      host: 'login.salesforce.com'
+    , port: 443
+    , path: '/services/oauth2/token'
+    , method: 'POST'
+    , headers: { 
+      "Content-Type": "application/x-www-form-urlencoded"
+    }
+  };
+
+  apireq = https.request(options, function(apires) {
+    var body = '';
+    console.log('STATUS: ' + apires.statusCode);
+    console.log('HEADERS: ' + JSON.stringify(apires.headers));
+    apires.setEncoding('utf8');
+    apires.on('data', function(d) { body += d; });
+    apires.on('end', function() { res.send(body); });
+  });
+
+  apireq.on('error', function(err) { console.log("error calling!" + err); });
+  
+  var data = "grant_type=password&" + 
+      "client_id=3MVG9QDx8IX8nP5SFJKf4fpPHVMwt.HN4JWdanXhf.ipMW11xdJyeHFScCK_VCq.OSU0gPXFAl1wHazLqGIc.&" + 
+      "client_secret=6325945293227652987&" + 
+      "username=sumeet_rohatgi@hotmail.com&" + 
+      "password=";
+
+  console.log(data);
+  apireq.write(data);
+  apireq.end();
+
+});
+
 app.get('/users', user.list);
 
-var server = httpProxy.createServer(function(req, res, proxy) {
-  //if (req.headers["X-Howl-Sid"] === null) {
     // curl https://login.salesforce.com/services/oauth2/token 
     // -d "grant_type=password" 
     // -d 'client_id=3MVG9QDx8IX8nP5SFJKf4fpPHVMwt.HN4JWdanXhf.ipMW11xdJyeHFScCK_VCq.OSU0gPXFAl1wHazLqGIc.' 
@@ -46,16 +90,10 @@ var server = httpProxy.createServer(function(req, res, proxy) {
       "username=sumeet_rohatgi@hotmail.com" + 
       "password=test123442Fx59RN27Z00NBDfdbcuOSv"
       );*/
-    //req.write('');
     //req.end();
-    proxy.proxyRequest(req, res, { host: 'login.salesforce.com', port: 443 });
-  //}
+    //console.log(util.inspect(req));
+    //console.log("req url:" + req.url);
+
+http.createServer(app).listen(app.get('port'), function() {
+  console.log('Express server listening on port ' + app.get('port'));
 });
-
-server.proxy.on('end', function(req,res) {
-  res.header("Access-Control-Allow-Origin", "*");
-});
-
-server.listen(3030);
-console.log('Express server listening on port ' + 3030);
-
