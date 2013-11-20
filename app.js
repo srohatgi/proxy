@@ -120,7 +120,7 @@ app.get('/review', function(req, res) {
   var server = req.query.server;
   var access_token = req.query.token;
   var product_code = req.query.product_code;
-  var soql =  'SELECT+Product_Review__c,+Product_Ratings__c,+Name+' + 
+  var soql =  'SELECT+Product_Review__c,+Product_Ratings__c,+Name,+CreatedDate+' + 
               'FROM+Product_User_Ratings_c__c+where+Product_Code__c+=+' + "'" + product_code + "'";
 
   var path = '/services/data/v29.0/query/' + '?q=' + soql;
