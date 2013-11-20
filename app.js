@@ -84,11 +84,11 @@ app.get('/search', function(req, res) {
   var options = {
       host: server.substring("https://".length)
     , port: 443
-    , path: '/services/search' + '?' + query
+    , path: 'services/data/v29.0/query' + '?' + query
     , method: 'POST'
     , headers: { 
         "Content-Type": "application/x-www-form-urlencoded"
-      , "X-Sid": access_token
+      , "Authorization": "Bearer " + access_token
     }
   };
 
