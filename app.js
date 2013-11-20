@@ -67,8 +67,8 @@ app.get('/login', function(req, res) {
   var data = "grant_type=password&" + 
       "client_id=3MVG9QDx8IX8nP5SFJKf4fpPHVMwt.HN4JWdanXhf.ipMW11xdJyeHFScCK_VCq.OSU0gPXFAl1wHazLqGIc.&" + 
       "client_secret=6325945293227652987&" + 
-      "username=sumeet_rohatgi@hotmail.com&" + 
-      "password=";
+      "username=" + process.env['sfdc_username'] + "&" + 
+      "password=" + process.env['sfdc_password'];
 
   console.log(data);
   apireq.write(data);
