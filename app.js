@@ -53,7 +53,7 @@ app.get('/login', function(req, res) {
     }
   };
 
-  apireq = https.request(options, function(apires) {
+  var apireq = https.request(options, function(apires) {
     var body = '';
     console.log('STATUS: ' + apires.statusCode);
     console.log('HEADERS: ' + JSON.stringify(apires.headers));
@@ -76,7 +76,35 @@ app.get('/login', function(req, res) {
 
 });
 
-app.get('/users', user.list);
+app.get('/search', function(req, res) {
+  var server = req.query.server;
+  var access_token = req.query.token;
+  var query = req.query.search_query;
+
+  var options = {
+      host: server.substring("https://".length)
+    , port: 443
+    , path: '/services/search' + '?' + query
+    , method: 'POST'
+    , headers: { 
+        "Content-Type": "application/x-www-form-urlencoded"
+      , "X-Sid": access_token
+    }
+  };
+
+  var apireq = https.request(options, function(apires) {
+    var body = '';
+    //console.log('STATUS: ' + apires.statusCode);
+    //console.log('HEADERS: ' + JSON.stringify(apires.headers));
+    apires.setEncoding('utf8');
+    apires.on('data', function(d) { body += d; });
+    apires.on('end', function() { res.send(body); });
+  });
+
+  apireq.on('error', function(err) { console.log("error calling!" + err); });
+  
+  apireq.end();  
+});
 
     // curl https://login.salesforce.com/services/oauth2/token 
     // -d "grant_type=password" 
