@@ -115,6 +115,44 @@ app.get('/search', function(req, res) {
   apireq.end();  
 });
 
+app.get('/review', function(req, res) {
+  var server = req.query.server;
+  var access_token = req.query.token;
+  var product_code = req.query.product_code;
+  var soql = 'SELECT+Product_Ratings_User__c,Product_Ratings__c+FROM+Product_User_Ratings_c__c';
+
+  if (product_code != null) {
+    soql += "+where+Name+like+%27%25" + query + "%25%27";
+  }
+
+  var path = '/services/data/v29.0/query/' + '?q=' + soql;
+  console.log("calling: " + path); 
+
+  var options = {
+      host: server.substring("https://".length)
+    , port: 443
+    , path: path
+    , method: 'GET'
+    , headers: { 
+        "Content-Type": "application/x-www-form-urlencoded"
+      , "Authorization": "Bearer " + access_token
+    }
+  };
+
+  var apireq = https.request(options, function(apires) {
+    var body = '';
+    //console.log('STATUS: ' + apires.statusCode);
+    //console.log('HEADERS: ' + JSON.stringify(apires.headers));
+    apires.setEncoding('utf8');
+    apires.on('data', function(d) { body += d; });
+    apires.on('end', function() { res.send(body); });
+  });
+
+  apireq.on('error', function(err) { console.log("error calling!" + err); });
+  
+  apireq.end();  
+});
+
     // curl https://login.salesforce.com/services/oauth2/token 
     // -d "grant_type=password" 
     // -d 'client_id=3MVG9QDx8IX8nP5SFJKf4fpPHVMwt.HN4JWdanXhf.ipMW11xdJyeHFScCK_VCq.OSU0gPXFAl1wHazLqGIc.' 
