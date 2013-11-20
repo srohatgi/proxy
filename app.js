@@ -65,8 +65,8 @@ app.get('/login', function(req, res) {
   apireq.on('error', function(err) { console.log("error calling!" + err); });
   
   var data = "grant_type=password&" + 
-      "client_id=3MVG9QDx8IX8nP5SFJKf4fpPHVMwt.HN4JWdanXhf.ipMW11xdJyeHFScCK_VCq.OSU0gPXFAl1wHazLqGIc.&" + 
-      "client_secret=6325945293227652987&" + 
+      "client_id=" + process.env['sfdc_client_id'] + "&" +
+      "client_secret=" + process.env['sfdc_client_secret'] + "&" +
       "username=" + process.env['sfdc_username'] + "&" + 
       "password=" + process.env['sfdc_password'];
 
@@ -79,13 +79,22 @@ app.get('/login', function(req, res) {
 app.get('/search', function(req, res) {
   var server = req.query.server;
   var access_token = req.query.token;
+  // var search_query = 'SELECT+Name,ProductCode+FROM+Product2'
   var query = req.query.search_query;
+  var soql = 'SELECT+Name,ProductCode+FROM+Product2';
+
+  if (query != null) {
+    soql += "+where+Name+like+%27%25" + query + "%25%27";
+  }
+
+  var path = '/services/data/v29.0/query/' + '?q=' + soql;
+  console.log("calling: " + path); 
 
   var options = {
       host: server.substring("https://".length)
     , port: 443
-    , path: 'services/data/v29.0/query' + '?' + query
-    , method: 'POST'
+    , path: path
+    , method: 'GET'
     , headers: { 
         "Content-Type": "application/x-www-form-urlencoded"
       , "Authorization": "Bearer " + access_token
@@ -110,13 +119,13 @@ app.get('/search', function(req, res) {
     // -d "grant_type=password" 
     // -d 'client_id=3MVG9QDx8IX8nP5SFJKf4fpPHVMwt.HN4JWdanXhf.ipMW11xdJyeHFScCK_VCq.OSU0gPXFAl1wHazLqGIc.' 
     // -d 'client_secret=6325945293227652987' 
-    // -d 'username=sumeet_rohatgi@hotmail.com' 
-    // -d 'password=test123442Fx59RN27Z00NBDfdbcuOSv'
+    // -d 'username=' 
+    // -d 'password='
     /*req.write("grant_type=password&" + 
       "client_id=3MVG9QDx8IX8nP5SFJKf4fpPHVMwt.HN4JWdanXhf.ipMW11xdJyeHFScCK_VCq.OSU0gPXFAl1wHazLqGIc.&" + 
       "client_secret=6325945293227652987" + 
-      "username=sumeet_rohatgi@hotmail.com" + 
-      "password=test123442Fx59RN27Z00NBDfdbcuOSv"
+      "username=" + 
+      "password="
       );*/
     //req.end();
     //console.log(util.inspect(req));
