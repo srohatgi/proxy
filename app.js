@@ -120,11 +120,8 @@ app.get('/review', function(req, res) {
   var server = req.query.server;
   var access_token = req.query.token;
   var product_code = req.query.product_code;
-  var soql = 'SELECT+Product_Ratings_User__c,Product_Ratings__c+FROM+Product_User_Ratings_c__c';
-
-  if (product_code != null) {
-    soql += "+where+Name+like+%27%25" + query + "%25%27";
-  }
+  var soql =  'SELECT+Product_Review__c,+Product_Ratings__c,+Name+' + 
+              'FROM+Product_User_Ratings_c__c+where+Product_Code__c+=+' + "'" + product_code + "'";
 
   var path = '/services/data/v29.0/query/' + '?q=' + soql;
   console.log("calling: " + path); 
